@@ -177,3 +177,67 @@ Output: results/multiqc_trimmed/multiqc_report.html
 
 The post-trimming QC was used to verify that the processed reads were suitable for downstream taxonomic profiling.
 
+## 6. Read subsampling for taxonomic profiling
+
+A subset of the trimmed reads was generated before taxonomic profiling to enable an efficient local benchmark with MetaPhlAn.
+
+Because the complete dataset contains approximately 24 million paired-end reads per sample, a full MetaPhlAn mapping run was computationally demanding on the local system. A subset of 1 million paired reads per sample was therefore selected for this portfolio-scale analysis.
+
+Subsampling was implemented as a reusable Nextflow module using `seqtk`. The same random seed (`42`) was used for R1 and R2 to maintain paired-end correspondence.
+
+Input: `results/trimmed/<sample>_trimmed_1.fastq.gz`  
+       `results/trimmed/<sample>_trimmed_2.fastq.gz`
+
+Output: `results/subsampled/<sample>_subsampled_1.fastq.gz`  
+        `results/subsampled/<sample>_subsampled_2.fastq.gz`
+
+The subsampling process was applied automatically to all four samples.
+
+The 1 million-read subset was used as a computational benchmark for downstream taxonomic profiling rather than as a replacement for the complete sequencing depth.
+
+## 7. Taxonomic profiling and profile merging with MetaPhlAn
+
+MetaPhlAn was used to estimate the taxonomic composition of the shotgun metagenomic samples from the subsampled paired-end reads.
+
+The workflow supports two execution modes, controlled by the `use_existing_merge` parameter in `nextflow.config`:
+
+* When `use_existing_merge = false`, the `METAPHLAN` module runs taxonomic profiling on the subsampled reads and produces an individual profile for each sample.
+* When `use_existing_merge = true`, the workflow reuses existing MetaPhlAn profiles from `results/metaphlan/` and skips the profiling step.
+
+In both modes, the individual profiles are passed to the `METAPHLAN_MERGE` module, defined in `modules/metaphlan_merge/main_metaphlan_merge.nf`. This module combines the profiles using `merge_metaphlan_tables.py` and generates a single table containing taxa as rows and samples as columns.
+
+This design separates taxonomic profiling from profile merging, allowing the downstream steps to be rerun without repeating the computationally intensive profiling process.
+
+**Input:** `results/metaphlan/<sample>_profile.txt` when reusing existing profiles.
+
+**Output:** `results/metaphlan_merge/metaphlan_merged.tsv`
+
+## 8. Genus-level taxonomic summary and visualization
+
+The merged MetaPhlAn table is passed directly to the `TAXONOMY_SUMMARY` module, defined in `modules/taxonomy_summary/main_taxonomy_summary.nf`.
+
+This module executes the Python script `scripts/taxonomy_summary.py`, which extracts genus-level entries from the merged table and summarizes their relative abundances across samples. Restricting the summary to genus-level entries avoids mixing different taxonomic ranks in the same visualization.
+
+The analysis generates three outputs:
+
+* `results/taxonomy_summary/taxonomy_summary.tsv`: genus-level relative abundance table.
+* `results/taxonomy_summary/taxonomy_barplot.png`: stacked bar plot showing the 15 genera with the highest mean relative abundance across samples. The remaining genera are grouped as `Other`.
+* `results/taxonomy_summary/taxonomy_heatmap.png`: heatmap comparing the relative abundances of the same 15 genera across samples.
+
+### Genus-level taxonomic composition
+
+The stacked bar plot provides an overview of the relative contribution of the most abundant genera in each sample.
+
+![Genus-level taxonomic composition](results/taxonomy_summary/taxonomy_barplot.png)
+
+### Comparison of the most abundant genera
+
+The heatmap complements the bar plot by highlighting differences in the relative abundance patterns of the selected genera across samples.
+
+![Heatmap of the top 15 genera](results/taxonomy_summary/taxonomy_heatmap.png)
+
+These visualizations provide an exploratory overview of microbial community composition and can help identify taxa for further investigation.
+
+The current analysis includes four samples: `FBI029_W0`, `FBI029_W16`, `FBI052_W0`, and `FBI052_W16`. Comparisons between baseline (W0) and week 16 (W16) are descriptive and exploratory. This small subset is insufficient to establish robust diet-associated effects or statistical significance.
+
+The modular design allows the taxonomic summary and visualizations to be regenerated from the merged table without rerunning the upstream MetaPhlAn profiling step.

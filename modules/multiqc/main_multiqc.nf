@@ -12,7 +12,7 @@ process MULTIQC {
 
     script:
     """
-    multiqc . \
+    multiqc ${fastqc_results} \
         --force \
         --filename multiqc_report.html
     """

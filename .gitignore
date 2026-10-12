@@ -1,0 +1,20 @@
+# Raw sequencing data
+data/
+SRR*/
+
+# Nextflow temporary files
+work/
+.nextflow/
+.nextflow*
+**/.nextflow.log*
+
+# Compressed sequencing files generated during analysis
+*.fastq.gz
+*.fq.gz
+
+# macOS
+.DS_Store
+
+# Local execution logs
+run_real.log
+run_resume.log
