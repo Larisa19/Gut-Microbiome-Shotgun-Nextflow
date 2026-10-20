@@ -4,6 +4,15 @@ Reproducible **shotgun metagenomics workflow** developed in **Nextflow DSL2** to
 
 The project is being developed incrementally, with each analysis step incorporated into the workflow and documented here. The main focus is on reproducible workflow development, biological reasoning and transparent documentation of analytical decisions.
 
+
+## Workflow architecture
+
+The project is organized into two stages:
+
+- **Part I — Quality control and taxonomic profiling (`main_I.nf`):** processes paired-end FASTQ files through raw-read quality control with FastQC and MultiQC, adapter trimming with Cutadapt, post-trimming quality control, read subsampling, taxonomic profiling with MetaPhlAn, profile merging, and taxonomic summary visualization.
+
+- **Part II — Functional profiling (`main_II.nf`, in development):** will extend the workflow with HUMAnN to characterize microbial gene families and metabolic pathways. In progress.
+
 ---
 
 ## 1. Study background
@@ -43,8 +52,8 @@ The project is intended as a **portfolio-scale reproducible analysis**, rather t
 | ---------- | ----------- | ------ | --------- | ----------- |
 | FBI029_W0  | FBI029      | Group1 | W0        | SRR31800610 |
 | FBI029_W16 | FBI029      | Group1 | W16       | SRR31800159 |
-| FBI052_W0  | FBI052      | Group2 | W0        | SRR31800271 |
-| FBI052_W16 | FBI052      | Group2 | W16       | SRR31800323 |
+| FBI016_W0  | FBI016      | Group2 | W0        | SRR31800340 |
+| FBI016_W16 | FBI016      | Group2 | W16       | SRR31800133 |
 
 Metadata:
 
@@ -160,8 +169,8 @@ The trimming step was completed successfully for all four paired-end samples. Ad
 | ---------- | ----------: | -------------------: | -------------------: |
 | FBI029_W0  |  24,354,291 |      596,811 (2.45%) |      583,191 (2.39%) |
 | FBI029_W16 |  23,684,666 |      667,974 (2.82%) |      645,015 (2.72%) |
-| FBI052_W0  |  24,538,509 |      618,875 (2.52%) |      617,119 (2.51%) |
-| FBI052_W16 |  24,342,011 |      594,267 (2.44%) |      584,064 (2.40%) |
+| FBI016_W0  |  24,815,969 |      721,920 (2.91%) |      697,592 (2.81%) |
+| FBI016_W16 |  25,160,519 |      884,940 (3.52%) |      878,403 (3.49%) |
 
 
 ## 5. Quality control after trimming
@@ -238,6 +247,70 @@ The heatmap complements the bar plot by highlighting differences in the relative
 
 These visualizations provide an exploratory overview of microbial community composition and can help identify taxa for further investigation.
 
-The current analysis includes four samples: `FBI029_W0`, `FBI029_W16`, `FBI052_W0`, and `FBI052_W16`. Comparisons between baseline (W0) and week 16 (W16) are descriptive and exploratory. This small subset is insufficient to establish robust diet-associated effects or statistical significance.
+The current analysis includes four samples: `FBI029_W0`, `FBI029_W16`, `FBI016_W0`, and `FBI016_W16`. Comparisons between baseline (W0) and week 16 (W16) are descriptive and exploratory. This small subset is insufficient to establish robust diet-associated effects or statistical significance.
 
 The modular design allows the taxonomic summary and visualizations to be regenerated from the merged table without rerunning the upstream MetaPhlAn profiling step.
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Reference databases
+
+### MetaPhlAn
+
+- **Version:** 4.1.1
+- **Database index:** `mpa_vJun23_CHOCOPhlAnSGB_202403`
+- **Purpose:** Taxonomic profiling of shotgun metagenomic reads.
+- **Storage:** External storage, outside the Git repository.
+- **Configuration:** The database directory and index are specified in the local Nextflow configuration.
+
+### HUMAnN
+
+| Database | Purpose | Storage |
+|---|---|---|
+| ChocoPhlAn, full | Nucleotide-level search against microbial pangenomes | External storage |
+| UniRef50, full annotated | Protein-level search and functional annotation | External storage |
+
+Example local configuration paths:
+
+```groovy
+params {
+    metaphlan_db = '/path/to/metaphlan_database_humann'
+    metaphlan_index = 'mpa_vJun23_CHOCOPhlAnSGB_202403'
+
+    humann_chocophlan_db = '/path/to/humann_database/chocophlan'
+    humann_uniref_db = '/path/to/humann_database/uniref'
+}
+```
+
+Replace these example paths with the actual database locations on your machine before running the workflow.
+
+Storage and reproducibility
+
+Keep reference databases outside the Git repository.
+
+Do not commit FASTQ files, database files, or large intermediate outputs.
+
+Store machine-specific paths in a local Nextflow configuration rather than hard-coding them into reusable workflow modules.
+
+Ensure sufficient free disk space for reference databases, input FASTQs, temporary files, and workflow outputs.
+
+Use persistent storage for databases and final outputs, and appropriate temporary storage for intermediate files.
+
+Record software versions and database index names for each analysis to support reproducibility.
+
+Reproducibility note: The current configuration uses MetaPhlAn 4.1.1 with mpa_vJun23_CHOCOPhlAnSGB_202403 and HUMAnN 3.9 with the full ChocoPhlAn and UniRef50 databases. Changing software versions or database releases may change taxonomic and functional profiling results. Database paths are specific to the local environment and must be adapted when running the workflow on another machine.
+
+
+
+
+

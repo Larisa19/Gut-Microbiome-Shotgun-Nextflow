@@ -9,7 +9,6 @@ include { METAPHLAN } from './modules/metaphlan/main_metaphlan.nf'
 include { METAPHLAN_MERGE } from './modules/metaphlan_merge/main_metaphlan_merge.nf'
 include { TAXONOMY_SUMMARY } from './modules/taxonomy_summary/main_taxonomy_summary.nf'
 
-
 process FASTQC_RAW {
 
     tag "$sample"
@@ -111,5 +110,4 @@ workflow {
 
     // 8. Taxonomic summary
     TAXONOMY_SUMMARY(merged_table)
-
 }

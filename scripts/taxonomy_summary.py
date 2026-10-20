@@ -1,4 +1,5 @@
 
+import re
 import argparse
 from pathlib import Path
 
@@ -6,6 +7,19 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+
+def sample_sort_key(sample):
+    """Sort by participant ID, then by numeric timepoint."""
+    match = re.match(r"^(FBI\d+)_W(\d+)$", sample)
+
+    if match:
+        participant = int(match.group(1).replace("FBI", ""))
+        timepoint = int(match.group(2))
+        return (0, participant, timepoint)
+
+    # Put unexpected sample names after the expected FBI samples.
+    return (1, sample, 10**9)
 
 
 def main():
@@ -17,6 +31,9 @@ def main():
     parser.add_argument("--top-n", type=int, default=15)
     args = parser.parse_args()
 
+    if args.top_n < 1:
+        raise ValueError("--top-n must be at least 1.")
+
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
@@ -26,9 +43,15 @@ def main():
     if "clade_name" not in df.columns:
         raise ValueError("Missing expected column: clade_name")
 
-    sample_cols = [c for c in df.columns if c != "clade_name"]
+    sample_cols = [
+        col for col in df.columns if col != "clade_name"
+    ]
+
     if not sample_cols:
         raise ValueError("No sample columns found.")
+
+    # Order: FBI016_W0, FBI016_W16, FBI029_W0, FBI029_W16.
+    sample_cols = sorted(sample_cols, key=sample_sort_key)
 
     # Select genus-level rows only, not species or SGB descendants.
     mask = df["clade_name"].astype(str).str.contains(
@@ -42,7 +65,10 @@ def main():
         .str[-1]
         .str.replace(r"^g__", "", regex=True)
     )
-    genus = genus[~genus["Genus"].isin(["", "unclassified"])]
+
+    genus = genus[
+        ~genus["Genus"].isin(["", "unclassified"])
+    ]
 
     if genus.empty:
         raise ValueError("No genus-level rows found.")
@@ -54,7 +80,7 @@ def main():
     if (abundance < 0).any().any():
         raise ValueError("Negative relative abundances detected.")
 
-    # Save all genus-level abundances as percentages.
+    # Save all genus-level abundances in the sorted sample order.
     abundance.to_csv(
         outdir / "taxonomy_summary.tsv",
         sep="\t",
@@ -66,13 +92,18 @@ def main():
     plot_data = abundance.loc[top].copy()
 
     other = abundance.drop(index=top, errors="ignore").sum(axis=0)
+
     if not other.empty:
         plot_data.loc["Other"] = other
 
     # Figure 1: stacked relative-abundance bar plot.
     ax = plot_data.T.plot(
-        kind="bar", stacked=True, figsize=(10, 6), width=0.8
+        kind="bar",
+        stacked=True,
+        figsize=(10, 6),
+        width=0.8
     )
+
     ax.set_xlabel("Sample")
     ax.set_ylabel("Relative abundance (%)")
     ax.set_title("Genus-level taxonomic composition")
@@ -82,34 +113,57 @@ def main():
         loc="upper left",
         fontsize=8
     )
+
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     plt.savefig(
         outdir / "taxonomy_barplot.png",
-        dpi=300, bbox_inches="tight"
+        dpi=300,
+        bbox_inches="tight"
     )
     plt.close()
 
     # Figure 2: heatmap of the most abundant genera.
     heat = abundance.loc[top]
-    fig, ax = plt.subplots(figsize=(8, max(4, len(top) * 0.3)))
-    image = ax.imshow(heat.values, aspect="auto", interpolation="nearest")
+
+    fig, ax = plt.subplots(
+        figsize=(8, max(4, len(top) * 0.3))
+    )
+
+    image = ax.imshow(
+        heat.values,
+        aspect="auto",
+        interpolation="nearest"
+    )
+
     ax.set_yticks(range(len(heat.index)))
     ax.set_yticklabels(heat.index, fontsize=8)
     ax.set_xticks(range(len(sample_cols)))
-    ax.set_xticklabels(sample_cols, rotation=45, ha="right")
+    ax.set_xticklabels(
+        sample_cols,
+        rotation=45,
+        ha="right"
+    )
     ax.set_xlabel("Sample")
     ax.set_ylabel("Genus")
     ax.set_title("Top genera: relative abundance (%)")
-    fig.colorbar(image, ax=ax, label="Relative abundance (%)")
+
+    fig.colorbar(
+        image,
+        ax=ax,
+        label="Relative abundance (%)"
+    )
+
     fig.tight_layout()
     fig.savefig(
         outdir / "taxonomy_heatmap.png",
-        dpi=300, bbox_inches="tight"
+        dpi=300,
+        bbox_inches="tight"
     )
     plt.close(fig)
 
     print(f"Samples: {len(sample_cols)}")
+    print("Sample order: " + " -> ".join(sample_cols))
     print(f"Genus-level taxa: {len(abundance)}")
     print(f"Top genera plotted: {len(top)}")
     print(f"Results written to {outdir}")
@@ -117,4 +171,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

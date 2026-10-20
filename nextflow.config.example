@@ -1,0 +1,57 @@
+
+params {
+    // Reuse existing MetaPhlAn profiles when available
+    use_existing_merge = false
+
+    // MetaPhlAn database
+    metaphlan_db = '/path/to/metaphlan_database'
+    metaphlan_index = 'YOUR_METAPHLAN_INDEX'
+    metaphlan_threads = 2
+    subsample_reads = 1000000
+
+    // HUMAnN databases
+    humann_chocophlan_db = '/path/to/humann_database/chocophlan'
+    humann_uniref_db = '/path/to/humann_database/uniref50_ec_filtered/uniref'
+}
+
+workDir = 'work'
+
+process {
+    withName: CUTADAPT {
+        conda = '/path/to/conda'
+    }
+
+    withName: HUMANN {
+        conda = '/path/to/conda/envs/humann'
+        maxForks = 1
+        cpus = 2
+        memory = '12 GB'
+        errorStrategy = 'ignore'
+    }
+}
+
+
+// Execution reports and logs
+timeline {
+    enabled = true
+    file = "${projectDir}/reports/timeline.html"
+}
+
+report {
+    enabled = true
+    file = "${projectDir}/reports/report.html"
+}
+
+trace {
+    enabled = true
+    file = "${projectDir}/reports/trace.txt"
+    overwrite = true
+}
+
+dag {
+    enabled = true
+    file = "${projectDir}/reports/dag.html"
+}
+
+conda.enabled = true
+

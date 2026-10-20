@@ -1,5 +1,8 @@
 # Raw sequencing data
-data/
+/data/*
+!/data/metadata/
+/data/metadata/*
+!/data/metadata/shotgun_samples.tsv
 SRR*/
 
 # Nextflow temporary files
@@ -18,3 +21,24 @@ work/
 # Local execution logs
 run_real.log
 run_resume.log
+
+# Local Nextflow configuration
+/nextflow.config
+
+# Local Nextflow configuration
+/nextflow.config
+
+# Nextflow execution reports and traces (if generated locally)
+trace.txt
+report.html
+timeline.html
+dag.html
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Temporary files
+*.tmp
+*.temp
+
