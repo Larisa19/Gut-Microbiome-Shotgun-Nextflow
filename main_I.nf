@@ -1,13 +1,15 @@
 nextflow.enable.dsl=2
 
-include { MULTIQC } from './modules/multiqc/main_multiqc.nf'
-include { CUTADAPT; SUMMARY_CUTADAPT } from './modules/cutadapt/main_cutadapt'
-include { FASTQC_TRIMMED } from './modules/fastqc_trimmed/main_fastqc_trimmed.nf'
-include { MULTIQC_TRIMMED } from './modules/multiqc_trimmed/main_multiqc_trimmed.nf'
-include { SUBSAMPLE } from './modules/subsample/main_subsample.nf'
+include { MULTIQC } from './modules/main_multiqc.nf'
+include { CUTADAPT; SUMMARY_CUTADAPT } from './modules/main_cutadapt'
+include { FASTQC_TRIMMED } from './modules/main_fastqc_trimmed.nf'
+include { MULTIQC_TRIMMED } from './modules/main_multiqc_trimmed.nf'
+include { SUBSAMPLE } from './modules/main_subsample.nf'
 include { METAPHLAN } from './modules/metaphlan/main_metaphlan.nf'
-include { METAPHLAN_MERGE } from './modules/metaphlan_merge/main_metaphlan_merge.nf'
+include { METAPHLAN_MERGE } from './modules/metaphlan/main_metaphlan_merge.nf'
 include { TAXONOMY_SUMMARY } from './modules/taxonomy_summary/main_taxonomy_summary.nf'
+include { BETA_DIVERSITY } from './modules/taxonomy_summary/main_beta_diversity.nf'
+
 
 process FASTQC_RAW {
 
@@ -110,4 +112,7 @@ workflow {
 
     // 8. Taxonomic summary
     TAXONOMY_SUMMARY(merged_table)
+
+    //9. Beta diversity
+    BETA_DIVERSITY(TAXONOMY_SUMMARY.out.summary)
 }

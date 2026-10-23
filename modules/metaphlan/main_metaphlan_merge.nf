@@ -3,7 +3,7 @@ process METAPHLAN_MERGE {
 
     tag "Merge MetaPhlAn profiles"
 
-    publishDir "${projectDir}/results/metaphlan/merged", mode: 'copy'
+    publishDir "${projectDir}/results/metaphlan", mode: 'copy'
 
     input:
     path profiles

@@ -39,6 +39,6 @@ process SUMMARY_CUTADAPT {
 
     script:
     """
-    python ${projectDir}/modules/cutadapt/summarize_cutadapt.py
+    python ${projectDir}/scripts/summarize_cutadapt.py
     """
 }
