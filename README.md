@@ -61,13 +61,12 @@ Metadata: data/metadata/shotgun_samples.tsv
 
 ## 4. Analysis workflow
 
-The workflow is being developed incrementally. The current planned analysis is:
-
-
+```mermaid
 flowchart TD
-    A["Raw paired-end FASTQ<br/>R1 + R2"] --> B["FastQC<br/>Raw read quality control"]
+    A["Raw paired-end FASTQ<br/>R1 + R2"] --> D["Cutadapt<br/>Adapter trimming"]
+    A --> B["FastQC<br/>Raw read quality control"]
     B --> C["MultiQC<br/>Aggregate raw QC reports"]
-    A --> D["Cutadapt<br/>Adapter trimming"]
+
     D --> E["Trimmed paired-end FASTQ"]
     E --> F["FastQC<br/>Trimmed read quality control"]
     F --> G["MultiQC<br/>Aggregate trimmed QC reports"]
@@ -77,13 +76,13 @@ flowchart TD
     I --> J["MetaPhlAn<br/>Taxonomic profiling"]
     J --> K["Merge taxonomic profiles"]
     K --> L["Genus-level taxonomic summary"]
-    L --> M["Bray–Curtis beta diversity<br/>PCoA"]
+    L --> M["Bray-Curtis beta diversity<br/>PCoA"]
 
     I --> N["HUMAnN<br/>Functional profiling"]
-    J -. "Taxonomic profile input" .-> N
+    J -.-> N
     N --> O["Merge HUMAnN outputs"]
     O --> P["Gene family and pathway abundance tables"]
-    P --> Q["Functional summary and<br/>longitudinal analysis"]
+    P --> Q["Functional summaries and longitudinal analysis"]
 
     classDef input fill:#E8F1FB,stroke:#4776A8,color:#17365D
     classDef qc fill:#F2F2F2,stroke:#888,color:#222
@@ -94,7 +93,7 @@ flowchart TD
     class B,C,F,G qc
     class D,H,J,K,N,O process
     class L,M,P,Q output
-
+```
 
 Each stage is implemented as a reproducible Nextflow component and added to the workflow as the analysis progresses.
 
