@@ -11,7 +11,7 @@ The project is organized into two stages:
 
 - **Part I — Quality control and taxonomic profiling (`main_I.nf`):** processes paired-end FASTQ files through raw-read quality control with FastQC and MultiQC, adapter trimming with Cutadapt, post-trimming quality control, read subsampling, taxonomic profiling with MetaPhlAn, profile merging, and taxonomic summary visualization.
 
-- **Part II — Functional profiling (`main_II.nf`, in development):** will extend the workflow with HUMAnN to characterize microbial gene families and metabolic pathways. In progress.
+- **Part II — Functional profiling (`main_II.nf`):** will extend the workflow with HUMAnN to characterize microbial gene families and metabolic pathways. In progress.
 
 ---
 
