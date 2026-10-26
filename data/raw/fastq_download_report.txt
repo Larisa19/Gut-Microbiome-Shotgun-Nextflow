@@ -1,0 +1,61 @@
+(base) larisas-air:shotgun_metagenomics lary$ python3 scripts/download_fastq.py --threads 2
+[SKIP] FBI029_W0: FASTQ completos y validados.
+
+[START] FBI029_W16 (SRR31800159)
++ prefetch SRR31800159 --output-directory /Volumes/Paul/LARISA/github_projects/sra_cache
+2026-10-19T08:08:39 prefetch.3.1.1: 1) Resolving 'SRR31800159'...
+2026-10-19T08:08:41 prefetch.3.1.1: Current preference is set to retrieve SRA Normalized Format files with full base quality scores
+2026-10-19T08:08:41 prefetch.3.1.1: 1) Downloading 'SRR31800159'...
+2026-10-19T08:08:41 prefetch.3.1.1:  SRA Normalized Format file is being retrieved
+2026-10-19T08:08:41 prefetch.3.1.1:  Downloading via HTTPS...
+2026-10-19T08:41:35 prefetch.3.1.1:  HTTPS download succeed
+2026-10-19T08:42:20 prefetch.3.1.1:  'SRR31800159' is valid: 2367994676 bytes were streamed from 2367984621
+2026-10-19T08:42:20 prefetch.3.1.1: 1) 'SRR31800159' was downloaded successfully
+2026-10-19T08:42:20 prefetch.3.1.1: 'SRR31800159' has 0 unresolved dependencies
++ fasterq-dump /Volumes/Paul/LARISA/github_projects/sra_cache/SRR31800159/SRR31800159.sra --split-files --threads 2 --temp /Volumes/Paul/LARISA/github_projects/shotgun_metagenomics_work/sra_download_tmp/FBI029_W16_m8a8vbjz --outdir /Volumes/Paul/LARISA/github_projects/shotgun_metagenomics_work/sra_download_tmp/FBI029_W16_m8a8vbjz
+spots read      : 23,684,666
+reads read      : 47,369,332
+reads written   : 47,369,332
+[OK] FBI029_W16: descarga validada.
+
+[START] FBI016_W0 (SRR31800340)
++ prefetch SRR31800340 --output-directory /Volumes/Paul/LARISA/github_projects/sra_cache
+2026-10-19T11:12:15 prefetch.3.1.1: 1) Resolving 'SRR31800340'...
+2026-10-19T11:12:17 prefetch.3.1.1: Current preference is set to retrieve SRA Normalized Format files with full base quality scores
+2026-10-19T11:12:17 prefetch.3.1.1: 1) Downloading 'SRR31800340'...
+2026-10-19T11:12:17 prefetch.3.1.1:  SRA Normalized Format file is being retrieved
+2026-10-19T11:12:17 prefetch.3.1.1:  Downloading via HTTPS...
+2026-10-19T11:42:12 prefetch.3.1.1:  HTTPS download succeed
+2026-10-19T11:42:20 prefetch.3.1.1:  'SRR31800340' is valid: 2478521734 bytes were streamed from 2478517022
+2026-10-19T11:42:20 prefetch.3.1.1: 1) 'SRR31800340' was downloaded successfully
+2026-10-19T11:42:20 prefetch.3.1.1: 'SRR31800340' has 0 unresolved dependencies
++ fasterq-dump /Volumes/Paul/LARISA/github_projects/sra_cache/SRR31800340/SRR31800340.sra --split-files --threads 2 --temp /Volumes/Paul/LARISA/github_projects/shotgun_metagenomics_work/sra_download_tmp/FBI016_W0_a_syjr8v --outdir /Volumes/Paul/LARISA/github_projects/shotgun_metagenomics_work/sra_download_tmp/FBI016_W0_a_syjr8v
+spots read      : 24,815,969
+reads read      : 49,631,938
+reads written   : 49,631,938
+[OK] FBI016_W0: descarga validada.
+
+[START] FBI016_W16 (SRR31800133)
++ prefetch SRR31800133 --output-directory /Volumes/Paul/LARISA/github_projects/sra_cache
+2026-10-19T14:00:36 prefetch.3.1.1: 1) Resolving 'SRR31800133'...
+2026-10-19T14:00:37 prefetch.3.1.1: Current preference is set to retrieve SRA Normalized Format files with full base quality scores
+2026-10-19T14:00:38 prefetch.3.1.1: 1) Downloading 'SRR31800133'...
+2026-10-19T14:00:38 prefetch.3.1.1:  SRA Normalized Format file is being retrieved
+2026-10-19T14:00:38 prefetch.3.1.1:  Downloading via HTTPS...
+2026-10-19T14:23:12 prefetch.3.1.1:  HTTPS download succeed
+2026-10-19T14:23:21 prefetch.3.1.1:  'SRR31800133' is valid: 2521420033 bytes were streamed from 2521414000
+2026-10-19T14:23:21 prefetch.3.1.1: 1) 'SRR31800133' was downloaded successfully
+2026-10-19T14:23:21 prefetch.3.1.1: 'SRR31800133' has 0 unresolved dependencies
++ fasterq-dump /Volumes/Paul/LARISA/github_projects/sra_cache/SRR31800133/SRR31800133.sra --split-files --threads 2 --temp /Volumes/Paul/LARISA/github_projects/shotgun_metagenomics_work/sra_download_tmp/FBI016_W16_z9xglz4w --outdir /Volumes/Paul/LARISA/github_projects/shotgun_metagenomics_work/sra_download_tmp/FBI016_W16_z9xglz4w
+spots read      : 25,160,519
+reads read      : 50,321,038
+reads written   : 50,321,038
+[OK] FBI016_W16: descarga validada.
+
+=== RESUMEN ===
+Muestras en la tabla: 4
+Fallos: 0
+Todas las muestras están descargadas y validadas.
+(base) larisas-air:shotgun_metagenomics lary$ 
+
+

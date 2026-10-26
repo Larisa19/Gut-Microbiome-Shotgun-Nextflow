@@ -1,4 +1,3 @@
-
 process METAPHLAN_MERGE {
 
     tag "Merge MetaPhlAn profiles"

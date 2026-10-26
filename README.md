@@ -55,9 +55,7 @@ The project is intended as a **portfolio-scale reproducible analysis**, rather t
 | FBI016_W0  | FBI016      | Group2 | W0        | SRR31800340 |
 | FBI016_W16 | FBI016      | Group2 | W16       | SRR31800133 |
 
-Metadata: sample sheet/samples.tsv
-
-The complete sample metadata used during project preparation are stored in: samplesheet/shotgun_metadata.tsv
+Metadata: data/metadata/shotgun_samples.tsv
 
 ---
 
@@ -65,40 +63,38 @@ The complete sample metadata used during project preparation are stored in: samp
 
 The workflow is being developed incrementally. The current planned analysis is:
 
-```text
-Raw paired-end FASTQ
-        │
-        ▼
-      FastQC
-        │
-        ▼
-      MultiQC
-        │
-        ▼
-     Cutadapt
-        │
-        ▼
- Trimmed FASTQ
-        │
-        ├── FastQC
-        │
-        └── MultiQC
-                │
-                ▼
-            MetaPhlAn
-                │
-                ▼
-        Taxonomic profiling
-                │
-                ▼
-             HUMAnN
-                │
-                ▼
-       Functional profiling
-                │
-                ▼
-       Downstream analysis
-```
+
+flowchart TD
+    A["Raw paired-end FASTQ<br/>R1 + R2"] --> B["FastQC<br/>Raw read quality control"]
+    B --> C["MultiQC<br/>Aggregate raw QC reports"]
+    A --> D["Cutadapt<br/>Adapter trimming"]
+    D --> E["Trimmed paired-end FASTQ"]
+    E --> F["FastQC<br/>Trimmed read quality control"]
+    F --> G["MultiQC<br/>Aggregate trimmed QC reports"]
+    E --> H["seqtk subsampling<br/>1 million read pairs per sample"]
+    H --> I["Subsampled paired-end FASTQ"]
+
+    I --> J["MetaPhlAn<br/>Taxonomic profiling"]
+    J --> K["Merge taxonomic profiles"]
+    K --> L["Genus-level taxonomic summary"]
+    L --> M["Bray–Curtis beta diversity<br/>PCoA"]
+
+    I --> N["HUMAnN<br/>Functional profiling"]
+    J -. "Taxonomic profile input" .-> N
+    N --> O["Merge HUMAnN outputs"]
+    O --> P["Gene family and pathway abundance tables"]
+    P --> Q["Functional summary and<br/>longitudinal analysis"]
+
+    classDef input fill:#E8F1FB,stroke:#4776A8,color:#17365D
+    classDef qc fill:#F2F2F2,stroke:#888,color:#222
+    classDef process fill:#E4F3E8,stroke:#43865A,color:#194D2B
+    classDef output fill:#FFF0D9,stroke:#C58A32,color:#704500
+
+    class A,E,I input
+    class B,C,F,G qc
+    class D,H,J,K,N,O process
+    class L,M,P,Q output
+
 
 Each stage is implemented as a reproducible Nextflow component and added to the workflow as the analysis progresses.
 
@@ -129,7 +125,7 @@ The report documents the output of each execution; running the command again ove
 
 Step-by-step analysis
 
-Step 1 — Raw read quality control
+## 1. Raw read quality control
 
 Input: Raw paired-end shotgun metagenomic FASTQ files
 
@@ -137,13 +133,10 @@ The raw sequencing reads were assessed before preprocessing to evaluate sequenci
 
 Tool: FastQC
 
-FastQC was run automatically through Nextflow for all four selected biological samples, generating reports for both R1 and R2.
+Input: fastq files R1 and R2 /data/raw
+Output: FastQC reports per sample  results/fastqc/
 
-Output: FastQC reports
-
-Files: results/fastqc/
-
-Step 2 — Quality control - MultiQC
+## 2. Quality control - MultiQC
 
 The individual FastQC reports were aggregated with MultiQC to provide a global overview of raw-read quality across the dataset.
 
@@ -153,34 +146,39 @@ Output: results/multiqc/multiqc_report.html
 
 ## 3. Adapter identification
 
-Before adapter trimming, the adapter sequences were identified from the sequencing data rather than assumed from the sequencing platform alone.
+Before trimming, it was investigated whether known Illumina adapter sequences were present in the raw paired-end FASTQ files. This involved reviewing FastQC quality-control reports and searching the raw reads for candidate adapter sequences.
 
-The study used paired-end Illumina NovaSeq 6000 sequencing. FastQC detected low-level adapter contamination in the raw reads. To investigate the adapter sequences, the expected Illumina adapter sequences were searched directly in the FASTQ files.
+The study used paired-end Illumina NovaSeq 6000 sequencing. FastQC indicated low-level adapter contamination, thus it was searched in a representative sample (`FBI029_W0`) to check for exact occurrences of two known Illumina adapter sequences.
 
-The following sequences were detected in the selected sample (`FBI029_W0`):
+**R1 search:**
 
-| Read | Adapter sequence                    | Matches |
-| ---- | ----------------------------------- | ------: |
-| R1   | `AGATCGGAAGAGCACACGTCTGAACTCCAGTCA` |   7,477 |
-| R2   | `AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT` |   7,532 |
+```bash
+gzcat data/raw/FBI029_W0_1.fastq.gz | grep -o 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA' | wc -l
+```
+**R2 search:**
 
-The presence of these sequences in both reads supports their use as the adapter sequences for the paired-end trimming step with Cutadapt.
+```bash
+gzcat data/raw/FBI029_W0_2.fastq.gz | grep -o 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT' | wc -l
+```
 
-This provides a data-supported basis for the adapter configuration used in the next workflow step.
+The commands returned the following counts:
+
+| Read | Candidate adapter sequence | Exact occurrences |
+|---|---|---:|
+| R1 | `AGATCGGAAGAGCACACGTCTGAACTCCAGTCA` | 7,477 |
+| R2 | `AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT` | 7,532 |
+
+The results confirmed that exact occurrences of both candidate adapter sequences were present in the selected sample. 
 
 ### 4. Adapter trimming
 
-The identified adapter sequences were removed from the paired-end reads using Cutadapt.
-Cutadapt was implemented as a reusable Nextflow module and processes all samples automatically.
-A JSON report was generated for each sample to retain the trimming statistics.
+The candidate Illumina adapter sequences obtained in the previous step were used to configure paired-end adapter trimming with Cutadapt. Cutadapt was implemented as a reusable Nextflow module and applied automatically to all four samples.
 
-Input: file_1.fastq.gz file_2.fastq.gz
-Output: results/trimmed/
+**Inputs:** Paired-end FASTQ files (`*_1.fastq.gz`, `*_2.fastq.gz`)
 
-A summary table was generated automatically from the Cutadapt reports:
-Output: results/trimmed/cutadapt_summary.tsv
+**Outputs:** Trimmed FASTQ files and per-sample JSON reports in `results/trimmed/`.
 
-The trimming step was completed successfully for all four paired-end samples. Adapter sequences were detected in approximately 2.4–2.8% of reads, while the majority of reads did not contain detectable adapter sequence.
+A Python script parsed the Cutadapt JSON reports and generated a consolidated summary table at `results/trimmed/cutadapt_summary.tsv`. The table reports the input read counts, adapter-match counts for R1 and R2, and the corresponding percentages calculated relative to the input read count.
 
 | Sample     | Input reads | R1 adapter reads (%) | R2 adapter reads (%) |
 | ---------- | ----------: | -------------------: | -------------------: |
@@ -189,6 +187,9 @@ The trimming step was completed successfully for all four paired-end samples. Ad
 | FBI016_W0  |  24,815,969 |      721,920 (2.91%) |      697,592 (2.81%) |
 | FBI016_W16 |  25,160,519 |      884,940 (3.52%) |      878,403 (3.49%) |
 
+Across the four samples, the reported adapter-match percentages ranged from **2.45% to 3.52% for R1** and from **2.39% to 3.49% for R2**.
+
+These results document the adapter matches reported by Cutadapt and the rationale for including adapter trimming in the workflow. The percentages should be interpreted according to Cutadapt's total_matches definition and do not necessarily represent the proportion of reads containing any possible adapter sequence.
 
 ## 5. Quality control after trimming
 
@@ -198,7 +199,6 @@ The FastQC results were aggregated with MultiQC to provide a global overview of 
 Both steps were implemented as reusable Nextflow modules.
 
 Output: results/fastqc_trimmed/
-
 Output: results/multiqc_trimmed/multiqc_report.html
 
 The post-trimming QC was used to verify that the processed reads were suitable for downstream taxonomic profiling.
@@ -247,7 +247,6 @@ The separation between profiling and merging allows existing profiles to be reus
 **Output:**
 - `results/metaphlan/metaphlan_merge.tsv
 
-
 ## 8. Genus-level taxonomic summary and visualization
 
 The merged MetaPhlAn table is passed directly to the `TAXONOMY_SUMMARY` module, defined in `modules/taxonomy_summary/main_taxonomy_summary.nf`.
@@ -275,7 +274,6 @@ The heatmap complements the bar plot by highlighting differences in the relative
 These visualizations provide an exploratory overview of microbial community composition and can help identify taxa for further investigation.
 
 The current analysis includes four samples: `FBI029_W0`, `FBI029_W16`, `FBI016_W0`, and `FBI016_W16`. Comparisons between baseline (W0) and week 16 (W16) are descriptive and exploratory. 
-
 
 ## 9. Beta diversity analysis and PCoA visualization
 
@@ -354,8 +352,6 @@ This step provides a compact overview of predicted microbial functional profiles
 
 These visualizations support the interpretation of predicted microbial functional potential and help identify pathways for further investigation. Results are exploratory and do not, by themselves, demonstrate pathway activity or metabolic function in vivo.
 
-
-
 ### 10.3 Longitudinal taxonomic and functional analysis
 
 A custom Python script (`scripts/longitudinal_analysis.py`) was developed to perform a descriptive longitudinal comparison of microbial taxonomic composition and functional pathway abundance between baseline (W0) and week 16 (W16) for each participant.
@@ -373,14 +369,6 @@ The analysis compares paired samples from two participants (FBI016 and FBI029) t
 - `results/longitudinal/taxonomy_paired_changes.png` — paired line plots showing genus abundance across timepoints.
 
 These analyses are exploratory and descriptive. With only two participants, they do not establish statistical significance or a causal effect of the dietary intervention. HUMAnN pathway abundances represent inferred microbial functional potential rather than direct measurements of metabolic activity in vivo.
-
-
-
-
-
-
-
-
 
 
 ## Reference databases
