@@ -291,71 +291,85 @@ The analysis includes four samples from two participants: `FBI016_W0`, `FBI016_W
 
 ## 10. Functional profiling with HUMAnN
 
-HUMAnN was used to estimate the functional potential of the shotgun metagenomic samples from the subsampled paired-end reads, using the corresponding MetaPhlAn taxonomic profiles.
+HUMAnN was used to characterize the functional potential of the gut microbial communities from subsampled paired-end shotgun metagenomic reads. The corresponding MetaPhlAn taxonomic profiles were supplied to support taxonomic stratification during functional profiling.
 
-The `HUMANN` process, defined in `modules/humann/main_humann.nf` and executed through `main_II.nf`.
+The `HUMANN` process is defined in `modules/humann/main_humann.nf` and executed through `main_II.nf`.
 
-**Input:**	`results/subsampled/*_{1,2}.fastq.gz` and corresponding MetaPhlAn profiles from 		`results/metaphlan/<sample>_profile.txt`.
-**Output:**	`results/humann/<sample>_humann/`, containing the gene family abundance, pathway abundance, and pathway coverage tables for each sample. 
+**Inputs:**
+- Subsampled paired-end reads: `results/subsampled/*_{1,2}.fastq.gz`
+- Corresponding MetaPhlAn profiles: `results/metaphlan/<sample>_profile.txt`
 
-Output files for each sample: 
+**Outputs:**
 
-* `*_genefamilies.tsv`: estimated gene family abundances.
-* `*_pathabundance.tsv`: estimated metabolic pathway abundances.
-* `*_pathcoverage.tsv`: pathway coverage estimates.
+Individual sample results are stored in `results/humann/<sample>_humann/` and include:
 
-## 10.1 Functional profiling merge
+- `*_genefamilies.tsv`: estimated gene family abundances.
+- `*_pathabundance.tsv`: estimated metabolic pathway abundances.
+- `*_pathcoverage.tsv`: estimated pathway coverage.
 
-After functional profiling, the HUMANN_MERGE module combines the individual HUMAnN output tables into merged tables for downstream comparative analysis.
+These tables provide complementary views of the microbial functional potential inferred from the metagenomic data.
 
-The module merges gene family abundance and pathway abundance tables across all samples, allowing functional features and metabolic pathways to be compared between participants and timepoints.
+### 10.1. Merging HUMAnN outputs
 
-Input:	Individual genefamilies.tsv
-	Individual pathabundance.tsv
+After per-sample functional profiling, the `HUMANN_MERGE` process combines individual HUMAnN tables into merged tables for downstream comparative analysis.
 
-Output:	genefamilies_merged.tsv
-	pathabundance_merged.tsv
+The module is defined in `modules/humann/main_humann_merge.nf` and is called from `main_II.nf`.
 
-The merged tables provide a unified view of functional gene families and metabolic pathway abundances across the four samples.
+**Inputs:**
+- Individual gene family abundance tables.
+- Individual pathway abundance tables.
 
-### 10.2 Functional profile summary and visualization
+**Outputs:**
+- `results/humann/genefamilies_merged.tsv`
+- `results/humann/pathabundance_merged.tsv`
 
-Following functional profile merging, a custom Python script (`scripts/humann_summary.py`) summarizes the merged HUMAnN pathway abundance table and generates visualizations of the 15 pathways with the highest mean abundance across samples.
+The merged tables provide a consistent representation of gene family and pathway abundances across the four samples, enabling exploratory comparisons between participants and timepoints.
 
-This step provides a compact overview of predicted microbial functional profiles and facilitates exploratory comparisons between participants and timepoints.
+### 10.2. Functional profile summary and visualization
 
-**Input:**	`results/humann/pathabundance_merged.tsv`
+The custom Python script `scripts/humann_summary.py` summarizes the merged HUMAnN pathway abundance table and generates visualizations of the 15 pathways with the highest mean abundance across samples.
 
-**Outputs:**	`results/humann/pathabundance_summary.tsv` — filtered pathway abundance table used for downstream visualization.
-		`results/taxonomy_summary/taxonomy_barplot.png` — horizontal bar plot of the 15 pathways with the highest mean abundance across samples.
-		`results/humann/taxonomy_heatmap.png` — heatmap showing the abundance patterns of these pathways across samples.
+The script excludes `UNMAPPED` and `UNINTEGRATED` entries from the pathway summary and ranks the remaining pathways by their mean abundance across the available samples.
 
-**Top 15 pathways by mean abundance**
+**Input:**
+- `results/humann/pathabundance_merged.tsv`
 
-![Top 15 metabolic pathways by mean abundance](results/taxonomy_summary/taxonomy_heatmap.png)
+**Outputs:**
+- `results/humann/humann_summary/pathabundance_summary.tsv` — filtered pathway abundance table.
+- `results/humann/humann_summary/top15_pathways.png` — horizontal bar plot of the 15 pathways with the highest mean abundance.
+- `results/humann/humann_summary/top15_pathways_heatmap.png` — heatmap showing the abundance patterns of these pathways across samples.
+
+**Top 15 metabolic pathways by mean abundance**
+
+![Top 15 metabolic pathways by mean abundance](results/humann/humann_summary/top15_pathways.png)
 
 **Pathway abundance heatmap**
 
-![Heatmap of the top 15 metabolic pathways across samples](results/taxonomy_summary/taxonomy_heatmap.png)
+![Heatmap of the top 15 metabolic pathways across samples](results/humann/humann_summary/top15_pathways_heatmap.png)
 
-These visualizations support the interpretation of predicted microbial functional potential and help identify pathways for further investigation. Results are exploratory and do not, by themselves, demonstrate pathway activity or metabolic function in vivo.
+These visualizations provide a compact overview of the inferred functional profiles and help identify pathways for further investigation. Results are exploratory: pathway abundance estimates do not directly measure pathway activity or metabolic function in vivo.
 
-### 10.3 Longitudinal taxonomic and functional analysis
+### 10.3. Longitudinal taxonomic and functional analysis
 
-A custom Python script (`scripts/longitudinal_analysis.py`) was developed to perform a descriptive longitudinal comparison of microbial taxonomic composition and functional pathway abundance between baseline (W0) and week 16 (W16) for each participant.
+The custom Python script `scripts/longitudinal_analysis.py` performs a descriptive comparison of microbial taxonomic composition and functional pathway abundance between baseline (W0) and week 16 (W16) for each participant.
 
-The analysis compares paired samples from two participants (FBI016 and FBI029) to explore individual changes over time. The script also normalizes HUMAnN pathway abundance profiles to counts per million (CPM) as part of the functional analysis.
+The analysis compares paired samples from two participants (FBI016 and FBI029) to explore individual changes over time. As part of the functional analysis, HUMAnN pathway abundance profiles are normalized to counts per million (CPM).
 
-**Inputs:**	`results/taxonomy_summary/taxonomy_summary.tsv` — genus-level abundance table generated from MetaPhlAn profiles.
-		`results/humann/pathabundance_merged.tsv` — merged HUMAnN pathway abundance table.
+**Inputs:**
+- `results/taxonomy_summary/taxonomy_summary.tsv` — genus-level abundance table derived from MetaPhlAn profiles.
+- `results/humann/pathabundance_merged.tsv` — merged HUMAnN pathway abundance table.
 
-**Outputs:**	`results/humann/pathabundance_cpm.tsv` — HUMAnN pathway abundance table normalized to CPM.
-		`results/longitudinal/taxonomy_abundances.tsv` — genus-level abundance table used for longitudinal analysis.
-		`results/longitudinal/taxonomy_changes.tsv` — paired W0 and W16 abundances, absolute differences, and log2 fold changes where defined for each genus and participant.
-		`results/longitudinal/taxonomy_paired_changes.png` — paired line plots showing genus abundance across timepoints.
+**Outputs:**
+- `results/humann/pathabundance_cpm.tsv` — HUMAnN pathway abundance table normalized to CPM.
+- `results/longitudinal/taxonomy_abundances.tsv` — genus-level abundance table used for longitudinal analysis.
+- `results/longitudinal/taxonomy_changes.tsv` — paired W0 and W16 abundances, absolute differences, and log2 fold changes where defined, for each genus and participant.
+- `results/longitudinal/taxonomy_paired_changes.png` — paired plots showing genus-level abundance across timepoints.
 
-These analyses are exploratory and descriptive. With only two participants, they do not establish statistical significance or a causal effect of the dietary intervention. HUMAnN pathway abundances represent inferred microbial functional potential rather than direct measurements of metabolic activity in vivo.
+**Longitudinal changes in genus-level abundance**
 
+![Paired genus-level abundance changes between baseline and week 16](results/longitudinal/taxonomy_paired_changes.png)
+
+These analyses are exploratory and descriptive. With only two participants, the results cannot establish statistical significance or a causal effect of the dietary intervention. HUMAnN pathway abundances represent inferred microbial functional potential rather than direct measurements of metabolic activity in vivo.
 
 ## Reference databases
 
