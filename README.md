@@ -295,8 +295,8 @@ HUMAnN was used to estimate the functional potential of the shotgun metagenomic 
 
 The `HUMANN` process, defined in `modules/humann/main_humann.nf` and executed through `main_II.nf`.
 
-**Input:** `results/subsampled/*_{1,2}.fastq.gz` and corresponding MetaPhlAn profiles from `results/metaphlan/<sample>_profile.txt`.
-**Output:** `results/humann/<sample>_humann/`, containing the gene family abundance, pathway abundance, and pathway coverage tables for each sample. 
+**Input:**	`results/subsampled/*_{1,2}.fastq.gz` and corresponding MetaPhlAn profiles from 		`results/metaphlan/<sample>_profile.txt`.
+**Output:**	`results/humann/<sample>_humann/`, containing the gene family abundance, pathway abundance, and pathway coverage tables for each sample. 
 
 Output files for each sample: 
 
@@ -324,19 +324,19 @@ Following functional profile merging, a custom Python script (`scripts/humann_su
 
 This step provides a compact overview of predicted microbial functional profiles and facilitates exploratory comparisons between participants and timepoints.
 
-**Input:**	`results/humann/humann_merge/pathabundance_merged.tsv`
+**Input:**	`results/humann/pathabundance_merged.tsv`
 
-**Outputs:**	`results/humann/humann_summary/pathabundance_summary.tsv` — filtered pathway abundance table used for downstream visualization.
-		`results/humann/humann_summary/top15_pathways.png` — horizontal bar plot of the 15 pathways with the highest mean abundance across samples.
-		`results/humann/humann_summary/top15_pathways_heatmap.png` — heatmap showing the abundance patterns of these pathways across samples.
+**Outputs:**	`results/humann/pathabundance_summary.tsv` — filtered pathway abundance table used for downstream visualization.
+		`results/taxonomy_summary/taxonomy_barplot.png` — horizontal bar plot of the 15 pathways with the highest mean abundance across samples.
+		`results/humann/taxonomy_heatmap.png` — heatmap showing the abundance patterns of these pathways across samples.
 
 **Top 15 pathways by mean abundance**
 
-![Top 15 metabolic pathways by mean abundance](results/humann/humann_summary/top15_pathways.png)
+![Top 15 metabolic pathways by mean abundance](results/taxonomy_summary/taxonomy_heatmap.png)
 
 **Pathway abundance heatmap**
 
-![Heatmap of the top 15 metabolic pathways across samples](results/humann/humann_summary/top15_pathways_heatmap.png)
+![Heatmap of the top 15 metabolic pathways across samples](results/taxonomy_summary/taxonomy_heatmap.png)
 
 These visualizations support the interpretation of predicted microbial functional potential and help identify pathways for further investigation. Results are exploratory and do not, by themselves, demonstrate pathway activity or metabolic function in vivo.
 
