@@ -237,8 +237,8 @@ The profiling step is followed by the `METAPHLAN_MERGE` module, which combines t
 
 The separation between profiling and merging allows existing profiles to be reused, avoiding unnecessary reruns of the computationally intensive profiling step.
 
-**Input:**	`results/metaphlan/<sample>_profiles.txt
-**Output:**	`results/metaphlan/metaphlan_merge.tsv
+**Input:**	`results/metaphlan/<sample>_profiles.txt`
+**Output:**	`results/metaphlan/metaphlan_merge.tsv`
 
 ## 8. Genus-level taxonomic summary and visualization
 
