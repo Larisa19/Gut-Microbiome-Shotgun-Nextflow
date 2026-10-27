@@ -341,11 +341,11 @@ The script excludes `UNMAPPED` and `UNINTEGRATED` entries from the pathway summa
 
 **Top 15 metabolic pathways by mean abundance**
 
-![Top 15 metabolic pathways by mean abundance](results/humann/humann_summary/top15_pathways.png)
+![Top 15 metabolic pathways by mean abundance](results/humann/top15_pathways.png)
 
 **Pathway abundance heatmap**
 
-![Heatmap of the top 15 metabolic pathways across samples](results/humann/humann_summary/top15_pathways_heatmap.png)
+![Heatmap of the top 15 metabolic pathways across samples](results/humann/top15_pathways_heatmap.png)
 
 These visualizations provide a compact overview of the inferred functional profiles and help identify pathways for further investigation. Results are exploratory: pathway abundance estimates do not directly measure pathway activity or metabolic function in vivo.
 
